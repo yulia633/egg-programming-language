@@ -22,8 +22,8 @@ namespace Egg\Parsers;
 function parseExpression(string $program): array
 {
     $program = skipSpace($program);
-    $match;
-    $expr;
+    $match = [];
+    $expr = null;
     if ($match = getString($program)) {
         $expr = [$type => 'value', $value => $match[1]];
     } elseif ($match = getNumber($program)) {
@@ -61,7 +61,7 @@ function skipSpace(string $string): string
  */
 function getString(string $text): mixed
 {
-    $string = preg_match('/^[a-z]+$/iu', $text, $matches, PREG_UNMATCHED_AS_NULL);
+    $string = preg_match('/^"([^"]*)"/', $text, $matches, PREG_UNMATCHED_AS_NULL);
     if (!$string || $string === 0) {
         return null;
     }
@@ -75,7 +75,7 @@ function getString(string $text): mixed
  */
 function getNumber(string $text): mixed
 {
-    $number = preg_match('/^[0-9]+$/iu', $text, $matches, PREG_UNMATCHED_AS_NULL);
+    $number = preg_match('/^\d+\b/', $text, $matches, PREG_UNMATCHED_AS_NULL);
     if (!is_numeric($number) || $number === 0) {
         return null;
     }
@@ -89,10 +89,9 @@ function getNumber(string $text): mixed
  */
 function getWord(string $text): mixed
 {
-    if (getNumber($text)) {
+    $word = preg_match('/^[^\s(),"]+/', $text, $matches, PREG_UNMATCHED_AS_NULL);
+    if (!$word || $word === 0) {
         return null;
     }
-    if (is_string($text) && !getString($text)) {
-        return $text;
-    }
+    return $matches;
 }
