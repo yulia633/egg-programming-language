@@ -45,11 +45,13 @@ function parseExpression(string $program): array
 function skipSpace(string $string): string
 {
     $first = preg_match('[\s]', $string);
-    if (!$first || $first === 0) {
+    if ($first === false) {
         return " ";
+    } elseif ($first === 0) {
+        return $string;
+    } else {
+        return ltrim($string, " ");
     }
-
-    return ltrim($string, " ");
 }
 
 /**
