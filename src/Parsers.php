@@ -63,7 +63,6 @@ function getString(string $text): mixed
     if (!$string || $string === 0) {
         return null;
     }
-    
     return $matches;
 }
 
@@ -78,7 +77,6 @@ function getNumber(string $text): mixed
     if (!is_numeric($number) || $number === 0) {
         return null;
     }
-    
     return $matches;
 }
 
@@ -92,7 +90,6 @@ function getWord(string $text): mixed
     if (getNumber($text)) {
         return null;
     }
-   
     if (is_string($text) && !getString($text)) {
         return $text;
     }
