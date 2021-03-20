@@ -5,7 +5,13 @@
     "keywords": [
         "programming",
         "language"
-      ],
+    ],
+    "authors": [
+        {
+            "name": "yulia633,",
+            "email": "ignat633yulia@yandex.ru"
+        }
+    ],
     "autoload": {
         "files": [
             "src/Parsers.php"
