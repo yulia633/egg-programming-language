@@ -1,3 +1,5 @@
+![linter and tests](https://github.com/yulia633/egg-programming-language/workflows/linter%20and%20tests/badge.svg)
+
 # Cинтаксический анализатор PHP
 
 ### О коде
@@ -66,10 +68,10 @@ do(define(sum, fun(array,
 
 ### Комментарии
 ```php
-console.log(parse("# hello\nx"));
+print_r(parse("# hello\nx"));
 // → {type: "word", name: "x"}
 
-console.log(parse("a # one\n   # two\n()"));
+print_r(parse("a # one\n   # two\n()"));
 // → {type: "apply",
 //    operator: {type: "word", name: "a"},
 //    args: []}
