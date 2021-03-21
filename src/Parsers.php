@@ -59,7 +59,7 @@ function skipSpace(string $string): string
  * @param string $text
  * @return mixed
  */
-function getString(string $text): mixed
+function getString(string $text)
 {
     $string = preg_match('/^"([^"]*)"/', $text, $matches, PREG_UNMATCHED_AS_NULL);
     if (!$string || $string === 0) {
@@ -73,7 +73,7 @@ function getString(string $text): mixed
  * @param string $text
  * @return mixed
  */
-function getNumber(string $text): mixed
+function getNumber(string $text)
 {
     $number = preg_match('/^\d+\b/', $text, $matches, PREG_UNMATCHED_AS_NULL);
     if (!is_numeric($number) || $number === 0) {
@@ -87,9 +87,9 @@ function getNumber(string $text): mixed
  * @param string $text
  * @return mixed
  */
-function getWord(string $text): mixed
+function getWord(string $text)
 {
-    $word = preg_match('/^[^\s(),"]+/', $text, $matches, PREG_UNMATCHED_AS_NULL);
+    $word = preg_match('/^[^\s(),#"]+/', $text, $matches, PREG_UNMATCHED_AS_NULL);
     if (!$word || $word === 0) {
         return null;
     }
