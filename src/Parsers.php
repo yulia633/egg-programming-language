@@ -22,19 +22,19 @@ namespace Egg\Parsers;
 function parseExpression(string $program): array
 {
     $program = skipSpace($program);
-    $match = [];
+    $matches = [];
     $expr = null;
-    if ($match = getString($program)) {
-        $expr = [$type => 'value', $value => $match[1]];
-    } elseif ($match = getNumber($program)) {
-        $expr = [$type => 'value', $value => $match[0]];
-    } elseif ($match = getWord($program)) {
-        $expr = [$type => 'word', $name => $match[0]];
+    if ($matches = getString($program)) {
+        $expr = getParse(getValueExp($matches[1]), substr($program, strlen($matches[0])));
+    } elseif ($matches = getNumber($program)) {
+        $expr = getParse(getValueExp($matches[0]), substr($program, strlen($matches[0])));
+    } elseif ($matches = getWord($program)) {
+        $expr = getParse(getValueExp($matches[0]), substr($program, strlen($matches[0])));
     } else {
         throw new \Exception("Unexpected syntax: {$program}.");
     }
 
-    return parseApply($expr, substr($program, strlen($match[0])));
+    return parseApply($expr);
 }
 
 /**
@@ -94,4 +94,23 @@ function getWord(string $text)
         return null;
     }
     return $matches;
+}
+
+/**
+ * используется в качестве массива для переноса
+ * из ParseExpression в остальную часть
+ */
+function getParse($expr, $rest = null)
+{
+    return [
+        'expr' => $expr,
+        'rest' => $rest
+    ];
+}
+
+function getValueExp($value = null)
+{
+    return [
+        'value' => $value
+    ];
 }
