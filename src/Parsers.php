@@ -29,7 +29,7 @@ function parseExpression(string $program): array
     } elseif ($matches = getNumber($program)) {
         $expr = getParse(getValueExp($matches[0]), substr($program, strlen($matches[0])));
     } elseif ($matches = getWord($program)) {
-        $expr = getParse(getValueExp($matches[0]), substr($program, strlen($matches[0])));
+        $expr = getParse(getWordExp($matches[0]), substr($program, strlen($matches[0])));
     } else {
         throw new \Exception("Unexpected syntax: {$program}.");
     }
@@ -112,5 +112,12 @@ function getValueExp($value = null)
 {
     return [
         'value' => $value
+    ];
+}
+
+function getWordExp($name)
+{
+    return [
+        'name' => $name
     ];
 }
