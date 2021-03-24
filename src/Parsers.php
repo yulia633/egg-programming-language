@@ -21,20 +21,53 @@ namespace Egg\Parsers;
  */
 function parseExpression(string $program): array
 {
-    $program = skipSpace($program);
-    $matches = [];
-    $expr = null;
-    if ($matches = getString($program)) {
-        $expr = getParse(getValueExp($matches[1]), substr($program, strlen($matches[0])));
-    } elseif ($matches = getNumber($program)) {
-        $expr = getParse(getValueExp($matches[0]), substr($program, strlen($matches[0])));
-    } elseif ($matches = getWord($program)) {
-        $expr = getParse(getWordExp($matches[0]), substr($program, strlen($matches[0])));
+    $formattedProgram = skipSpace($program);
+
+    $strings = getString($formattedProgram);
+    $numbers = getNumber($formattedProgram);
+    $words = getWord($formattedProgram);
+    if ($strings) {
+        $expr = ["type" => "value", "value" => $words[1]];
+    } elseif ($numbers) {
+        $expr = ["type" => "value", "value" => $words[0]];
+    } elseif ($words) {
+        $expr = ["type" => "word", "name" => $words[0]];
     } else {
-        throw new \Exception("Unexpected syntax: {$program}.");
+        throw new \Exception("Неожиданный синтаксис: {$formattedProgram}.");
+    }
+    return parseApply($expr, substr($formattedProgram, strlen($words[0])));
+}
+
+/**
+ * Проверяет является ли выражение приложением
+ * @param array $expr
+ * @param string $program
+ * @return array
+ */
+function parseApply(array $expr, string $program): array
+{
+    $formattedProgram = skipSpace($program);
+
+    if (substr($formattedProgram, 0, 1) != '(') {
+        return getExpression($expr, $formattedProgram);
     }
 
-    return parseApply($expr);
+    $program = skipSpace(substr($formattedProgram, 1));
+    $expr = ["type" => "apply", "operator" => $expr, "args" => []];
+
+    while (substr($program, 0, 1) != ')') {
+        $arg = parseExpression($program);
+        $expr["args"][] = $arg["expr"];
+        $program = skipSpace($arg["rest"]);
+
+        if (substr($program, 0, 1) === ',') {
+            $program = skipSpace(substr($program, 1));
+        } elseif (substr($program, 0, 1) != ')') {
+            throw new \Exception("Ожидается ',' или ')'.");
+        }
+    }
+
+    return parseApply($expr, substr($program, 1));
 }
 
 /**
@@ -42,16 +75,9 @@ function parseExpression(string $program): array
  * @param string $string
  * @return string
  */
-function skipSpace(string $string): string
+function skipSpace(string $program)
 {
-    $first = preg_match('[\s]', $string);
-    if ($first === false) {
-        return " ";
-    } elseif ($first === 0) {
-        return $string;
-    } else {
-        return ltrim($string, " ");
-    }
+    return ltrim($program);
 }
 
 /**
@@ -61,11 +87,7 @@ function skipSpace(string $string): string
  */
 function getString(string $text)
 {
-    $string = preg_match('/^"([^"]*)"/', $text, $matches, PREG_UNMATCHED_AS_NULL);
-    if (!$string || $string === 0) {
-        return null;
-    }
-    return $matches;
+    return preg_match('/^"([^"]*)"/', $text, $matches, PREG_UNMATCHED_AS_NULL);
 }
 
 /**
@@ -75,11 +97,7 @@ function getString(string $text)
  */
 function getNumber(string $text)
 {
-    $number = preg_match('/^\d+\b/', $text, $matches, PREG_UNMATCHED_AS_NULL);
-    if (!is_numeric($number) || $number === 0) {
-        return null;
-    }
-    return $matches;
+    return preg_match('/^\d+\b/', $text, $matches, PREG_UNMATCHED_AS_NULL);
 }
 
 /**
@@ -90,9 +108,6 @@ function getNumber(string $text)
 function getWord(string $text)
 {
     $word = preg_match('/^[^\s(),#"]+/', $text, $matches, PREG_UNMATCHED_AS_NULL);
-    if (!$word || $word === 0) {
-        return null;
-    }
     return $matches;
 }
 
@@ -100,7 +115,7 @@ function getWord(string $text)
  * используется в качестве массива для переноса
  * из ParseExpression в остальную часть
  */
-function getParse($expr, $rest = null)
+function getExpression($expr, $rest)
 {
     return [
         'expr' => $expr,
@@ -108,16 +123,20 @@ function getParse($expr, $rest = null)
     ];
 }
 
-function getValueExp($value = null)
+/**
+ * Функция-обработчик проверяет достигнут ли конец входной строки,
+ * и если да, возвращает выражение.
+ * @param string $program
+ * @return array
+ */
+function parse(string $program): array
 {
-    return [
-        'value' => $value
-    ];
-}
+    $resultExpr = parseExpression($program);
+    $expression = $resultExpr["expr"];
+    $rest = $resultExpr["rest"];
 
-function getWordExp($name)
-{
-    return [
-        'name' => $name
-    ];
+    if (skipSpace(strlen($rest)) > 0) {
+        throw new \Exception("Неожиданный текст после программы");
+    }
+    return $expression;
 }
